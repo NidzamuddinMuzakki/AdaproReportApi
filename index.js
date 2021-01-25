@@ -37,7 +37,10 @@ function verifyToken(token){
 
 // Check if the user exists in database
 function isAuthenticated({username, password}){
-  return userdb.user.findIndex(user => user.Username === username && user.Password === password) !== -1
+  fs.readFile("./db.json", (err, data) => { 
+    var data = JSON.parse(data.toString())
+    return data.user.findIndex(user => user.Username === username && user.Password === password) !== -1
+  })
 }
 
 // Register New User
