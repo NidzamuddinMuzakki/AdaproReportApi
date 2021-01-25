@@ -579,8 +579,8 @@ server.post('/credential_service/get_user', (req, res) => {
             var data = JSON.parse(data.toString());
             res.status(200).json({
             "response_code": 200,
-            "data": per_page?data.department.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.group.length?data.group.length:parseInt(per_page)*parseInt(page)):data.department,
-            "field_filter_name": data.department.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.group.length?data.group.length:parseInt(per_page)*parseInt(page)),
+            "data": per_page?data.department.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.department.length?data.department.length:parseInt(per_page)*parseInt(page)):data.department,
+            "field_filter_name": data.department.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.department.length?data.department.length:parseInt(per_page)*parseInt(page)),
             "count_data": data.department.length,
         });
             
@@ -608,8 +608,8 @@ server.post('/credential_service/get_user', (req, res) => {
             var data = JSON.parse(data.toString());
             res.status(200).json({
             "response_code": 200,
-            "data": per_page?data.role.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.group.length?data.group.length:parseInt(per_page)*parseInt(page)):data.role,
-            "field_filter_name": data.role.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.group.length?data.group.length:parseInt(per_page)*parseInt(page)),
+            "data": per_page?data.role.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.role.length?data.role.length:parseInt(per_page)*parseInt(page)):data.role,
+            "field_filter_name": data.role.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.role.length?data.role.length:parseInt(per_page)*parseInt(page)),
             "count_data": data.role.length,
         });
             
@@ -635,8 +635,8 @@ server.post('/credential_service/get_user', (req, res) => {
             var data = JSON.parse(data.toString());
             res.status(200).json({
             "response_code": 200,
-            "data": per_page?data.branch.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.group.length?data.group.length:parseInt(per_page)*parseInt(page)):data.branch,
-            "field_filter_name": data.branch.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.group.length?data.group.length:parseInt(per_page)*parseInt(page)),
+            "data": per_page?data.branch.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.branch.length?data.branch.length:parseInt(per_page)*parseInt(page)):data.branch,
+            "field_filter_name": data.branch.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data.branch.length?data.branch.length:parseInt(per_page)*parseInt(page)),
             "count_data": data.branch.length,
         });
             
