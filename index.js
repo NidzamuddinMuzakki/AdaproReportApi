@@ -1,8 +1,13 @@
 var PORT = process.env.PORT || 5000;
-var express = require('express');
-var app = express();
+var express = require('express'),
+    app = module.exports.app = express();
 
-var http = require('http');
+var http = require('http')
+const webSocketServer = require('websocket').server;
+var server = http.createServer(app);
+var cors = require('cors')
+
+ 
 
 
 
@@ -13,13 +18,26 @@ const jsonLogic = require('json-logic-js')
 const jwt = require('jsonwebtoken')
 const { parse } = require('path')
 const ExcelJS = require('exceljs');
-const server = jsonServer.create()
-const router = jsonServer.router('./database.json')
-const userdb = JSON.parse(fs.readFileSync('./db.json', 'UTF-8'))
+// const server = jsonServer.create()
 
-server.use(bodyParser.urlencoded({extended: true}))
-server.use(bodyParser.json())
-server.use(jsonServer.defaults());
+
+
+var jsonParser = bodyParser.json()
+
+// const requestHandler = (request, response) => {  
+//   if(/* POST request */){
+//     // use body-parser here..
+//     jsonParser(request, response, (error) => {
+//       // request.body is populated, if there was a json body
+//     })
+//   }
+//   response.end('Hello Node.js Server!')
+// }
+
+app.use(cors())
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.json())
+// server.use(jsonServer.defaults());
 
 const SECRET_KEY = '123456789'
 
@@ -44,9 +62,9 @@ function isAuthenticated({username, password}){
 }
 
 // Register New User
-server.post('/auth/register', (req, res) => {
+app.post('/auth/register', (req, res) => {
   console.log("register endpoint called; request body:");
-  console.log(req.body);
+
   const {Username, Password} = req.body;
 
   if(isAuthenticated({Username, Password}) === true) {
@@ -84,14 +102,14 @@ fs.readFile("./db.json", (err, data) => {
 
 // Create token for new user
   const access_token = createToken({Username, Password})
-  console.log("Access Token:" + access_token);
+
   res.status(200).json({access_token})
 })
 
 // Login to one of the users from ./users.json
-server.post('/credential_service/login', (req, res) => {
+app.post('/credential_service/login', (req, res) => {
   console.log("login endpoint called; request body:");
-  console.log(req.body);
+
 
   const {username, password} = req.body;
  
@@ -102,14 +120,14 @@ server.post('/credential_service/login', (req, res) => {
     return
   }
   const access_token = createToken({username, password})
-  console.log("Access Token:" + access_token);
+
   res.status(200).json({"output_type": "json",
   "response_code": 200,
   "data": access_token})
 })
-server.post('/credential_service/get_user', (req, res) => {
+app.post('/credential_service/get_user', (req, res) => {
     console.log("login endpoint called; request body:");
-    console.log(req.body);
+ 
   
     const {info_data, key, per_page, page,row_id, ficos} = req.body;
     let verifyTokenResult;
@@ -148,7 +166,7 @@ server.post('/credential_service/get_user', (req, res) => {
               
                 
               }
-              console.log(data1);
+          
                 res.status(200).json({
                     "response_code": 200,
                     "data": data1.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data1.length?data1.length:parseInt(per_page)*parseInt(page)),
@@ -183,7 +201,7 @@ server.post('/credential_service/get_user', (req, res) => {
     // "response_code": 200,
     // "data": access_token})
   })
-  server.post('/credential_service/update_user', (req, res) => {
+  app.post('/credential_service/update_user', (req, res) => {
     console.log("login endpoint called; request body:");
    
   
@@ -216,7 +234,7 @@ server.post('/credential_service/get_user', (req, res) => {
 
 
           
-          console.log(req.body);
+         
     //Add new user
     // data.user.push({id: last_item_id + 1, Username: Username, Password: Password}); //add some data
     fs.writeFile("./db.json", JSON.stringify(data), (err, result) => {  // WRITE
@@ -241,7 +259,7 @@ server.post('/credential_service/get_user', (req, res) => {
   
   })
 
-  server.post('/credential_service/change_password', (req, res) => {
+  app.post('/credential_service/change_password', (req, res) => {
     console.log("login endpoint called; request body:");
    
   
@@ -264,7 +282,7 @@ server.post('/credential_service/get_user', (req, res) => {
         
 
           
-          console.log(req.body);
+      
     //Add new user
     // data.user.push({id: last_item_id + 1, Username: Username, Password: Password}); //add some data
     fs.writeFile("./db.json", JSON.stringify(data), (err, result) => {  // WRITE
@@ -294,7 +312,7 @@ server.post('/credential_service/get_user', (req, res) => {
 
 
 
-  server.post('/credential_service/create_user', (req, res) => {
+  app.post('/credential_service/create_user', (req, res) => {
     console.log("login endpoint called; request body:");
    
   
@@ -326,8 +344,7 @@ server.post('/credential_service/get_user', (req, res) => {
 
 
           
-          console.log(req.body);
-    //Add new user
+         
     data.user.push({
             row_id: last_item_id + 1, 
             Username:req.body.username,
@@ -369,7 +386,7 @@ server.post('/credential_service/get_user', (req, res) => {
     }
   
   })
-  server.post('/credential_service/delete_user', (req, res) => {
+  app.post('/credential_service/delete_user', (req, res) => {
     console.log("login endpoint called; request body:");
    
   
@@ -387,8 +404,7 @@ server.post('/credential_service/get_user', (req, res) => {
         fs.readFile("./db.json", (err, data) => { 
           var data = JSON.parse(data.toString());
           data.user = data.user.filter((i) => !row_id.includes(i.row_id))
-          console.log(row_id)
-          console.log(data.user)
+          
         fs.writeFile("./db.json", JSON.stringify(data), (err, result) => {  // WRITE
         if (err) {
           const status = 401
@@ -413,7 +429,7 @@ server.post('/credential_service/get_user', (req, res) => {
 
 
 
-  server.post('/credential_service/download_excel', (req, res) => {
+  app.post('/credential_service/download_excel', (req, res) => {
     console.log("login endpoint called; request body:");
    
   
@@ -438,7 +454,7 @@ server.post('/credential_service/get_user', (req, res) => {
           }
           const dataUser =  data.user
 
-        console.log(dataUser)
+
           const workbook = new ExcelJS.Workbook(); //creating workbook
           const worksheet = workbook.addWorksheet('Data User'); //creating worksheet
   
@@ -455,7 +471,7 @@ server.post('/credential_service/get_user', (req, res) => {
               ]
               
           worksheet.columns = kolom
-          console.log(dataUser)
+     
           worksheet.addRows(dataUser);
           worksheet.getRow(1).eachCell((cell)=>{
               cell.font = {bold:true}
@@ -493,9 +509,9 @@ server.post('/credential_service/get_user', (req, res) => {
 
 
 
-  server.post('/credential_service/get_menu', (req, res) => {
+  app.post('/credential_service/get_menu', (req, res) => {
     console.log("login endpoint called; request body:");
-    console.log(req.body);
+
   
     const {info_data, key, row_perpage, page} = req.body;
     let verifyTokenResult;
@@ -533,9 +549,9 @@ server.post('/credential_service/get_user', (req, res) => {
 
 
 
-  server.post('/credential_service/get_group', (req, res) => {
+  app.post('/credential_service/get_group', (req, res) => {
     console.log("login endpoint called; request body:");
-    console.log(req.body);
+  
   
     const {info_data, key, per_page, page} = req.body;
     let verifyTokenResult;
@@ -561,9 +577,9 @@ server.post('/credential_service/get_user', (req, res) => {
     }
    
   })
-  server.post('/credential_service/get_department', (req, res) => {
+  app.post('/credential_service/get_department', (req, res) => {
     console.log("login endpoint called; request body:");
-    console.log(req.body);
+  
   
     const {info_data, key, per_page, page} = req.body;
     let verifyTokenResult;
@@ -589,9 +605,8 @@ server.post('/credential_service/get_user', (req, res) => {
     }
   })
 
-  server.post('/credential_service/get_role', (req, res) => {
-    console.log("login endpoint called; request body:");
-    console.log(req.body);
+  app.post('/credential_service/get_role', (req, res) => {
+ 
   
     const {info_data, key, per_page, page} = req.body;
     let verifyTokenResult;
@@ -617,9 +632,9 @@ server.post('/credential_service/get_user', (req, res) => {
         })
     }
   })
-  server.post('/credential_service/get_branch', (req, res) => {
+  app.post('/credential_service/get_branch', (req, res) => {
     console.log("login endpoint called; request body:");
-    console.log(req.body);
+
   
     const {info_data, key, per_page, page} = req.body;
     let verifyTokenResult;
@@ -644,9 +659,9 @@ server.post('/credential_service/get_user', (req, res) => {
         })
     }
   })
-  server.post('/credential_service/get_log', (req, res) => {
+  app.post('/credential_service/get_log', (req, res) => {
     console.log("login endpoint called; request body:");
-    console.log(req.body);
+
   
     const {info_data, key, per_page, page} = req.body;
     let verifyTokenResult;
@@ -671,51 +686,97 @@ server.post('/credential_service/get_user', (req, res) => {
         })
     }
   })
-  server.get('/', (req, res) => {
-    console.log("Welcome To Report Api");
-  
-   
-  })
+ 
 
 
 
 
-server.use(/^(?!\/auth).*$/,  (req, res, next) => {
-  if (req.headers.authorization === undefined || req.headers.authorization.split(' ')[0] !== 'Bearer') {
-    const status = 401
-    const message = 'Error in authorization format'
-    res.status(status).json({status, message})
-    return
-  }
-  try {
-    let verifyTokenResult;
-     verifyTokenResult = verifyToken(req.headers.authorization.split(' ')[1]);
+// server.use(/^(?!\/auth).*$/,  (req, res, next) => {
+//   if (req.headers.authorization === undefined || req.headers.authorization.split(' ')[0] !== 'Bearer') {
+//     const status = 401
+//     const message = 'Error in authorization format'
+//     res.status(status).json({status, message})
+//     return
+//   }
+//   try {
+//     let verifyTokenResult;
+//      verifyTokenResult = verifyToken(req.headers.authorization.split(' ')[1]);
 
-     if (verifyTokenResult instanceof Error) {
-       const status = 401
-       const message = 'Access token not provided'
-       res.status(status).json({status, message})
-       return
-     }
-     next()
-  } catch (err) {
-    const status = 401
-    const message = 'Error access_token is revoked'
-    res.status(status).json({status, message})
-  }
-})
+//      if (verifyTokenResult instanceof Error) {
+//        const status = 401
+//        const message = 'Access token not provided'
+//        res.status(status).json({status, message})
+//        return
+//      }
+//      next()
+//   } catch (err) {
+//     const status = 401
+//     const message = 'Error access_token is revoked'
+//     res.status(status).json({status, message})
+//   }
+// })
 
 
-app.use(express.static('client'));
+// app.use(express.static('client'));
+// var io = require('socket.io')(server);
 
 server.listen(PORT, function() {
   console.log('Chat server running');
+ 
+  // io.emit('messageSent', {
+  //   data:"cuy"
+  // })
+    // io.on('connection', function(socket) {
+    //   // console.log("User " + socket.id)
+    // })
+    //   socket.on('messageSent', function(msg) {
+    //    console.log("hay")
+    //     // socket.broadcast.emit('messageSent', msg);
+       
+    //   });
+    // });
 });
 
-// var io = require('socket.io')(server);
 
-// io.on('connection', function(socket) {
-//   socket.on('message', function(msg) {
-//     io.emit('message', msg);
-//   });
-// });
+const wsServer = new webSocketServer({
+  httpServer: server
+});
+
+const clients = {};
+
+// This code generates unique userid for everyuser.
+const getUniqueID = () => {
+  const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  return s4() + s4() + '-' + s4();
+};
+
+wsServer.on('request', function (request) {
+  var userID = getUniqueID();
+  // console.log((new Date()) + ' Recieved a new connection from origin ' + request.origin + '.');
+
+  // You can rewrite this part of the code to accept only the requests from allowed origin
+  const connection = request.accept(null, request.origin);
+  clients[userID] = connection;
+  // console.log('connected: ' + userID + ' in ' + Object.getOwnPropertyNames(clients));
+
+  connection.on('message', function(message) {
+    if (message.type === 'utf8') {
+      // console.log('Received Message: ', message.utf8Data);
+
+      // broadcasting message to all connected clients
+      for(key in clients) {
+        if(clients[userID]==clients[key]){
+          console.log("hay")
+        }else{
+          clients[key].sendUTF(message.utf8Data);
+          console.log('sent Message to: ', clients[key]);
+
+        }
+      }
+    }
+  })
+});
+
+
+
+
