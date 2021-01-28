@@ -129,7 +129,7 @@ app.post('/credential_service/get_user', (req, res) => {
     console.log("login endpoint called; request body:");
  
   
-    const {info_data, key, per_page, page,row_id, ficos} = req.body;
+    let {info_data, key, per_page, page,row_id, ficos} = req.body;
     let verifyTokenResult;
     verifyTokenResult = verifyToken(key);
 
@@ -149,8 +149,8 @@ app.post('/credential_service/get_user', (req, res) => {
                
                 uu.Department = uu.Department?uu.Department["Department Name"]:'';
                 uu.Group = uu.Group?uu.Group["Group Name"]:'';
-                uu.Role = uu.Role?uu.Role.map(elem=>elem["Role Name"]).join(", "):''
-                uu.Branch = uu.Group?uu.Branch.map(elem=>elem["Branch Name"]).join(", "):''
+                uu.Role = uu.Role?uu.Role.map(elem=>elem["Role Name"]):[];
+                uu.Branch = uu.Group?uu.Branch.map(elem=>elem["Branch Name"]):[];
                 delete uu["Access View"];
                 delete uu["Access Create"];
                 delete uu["Access Update"];
@@ -162,15 +162,35 @@ app.post('/credential_service/get_user', (req, res) => {
                 delete uu["Block Reason"];
               }
               if(ficos!=''){
-                data1 = data1.filter(hasil=>{if(jsonLogic.apply(ficos, hasil))return hasil}  )
-              
+                const clone = (obj) => Object.assign({}, obj);
+                const renameKey = (object, key, newKey) => {
+
+                  const clonedObj = clone(object);
                 
+                  const targetKey = clonedObj[key];
+                
+                
+                
+                  delete clonedObj[key];
+                
+                  clonedObj[newKey] = targetKey;
+                
+                  return clonedObj;
+                
+                };
+                ficos = renameKey(ficos.and[0], 'in', 'some');
+                data1 = data1.filter(hasil=>{if(jsonLogic.apply(ficos, hasil))return hasil}  )
+             
+                var kepala={"Role":[1,2]};
+                console.log(ficos)
+                // console.log(jsonLogic.apply(ficos,kepala))
+                // console.log(kepala)
               }
-          
+              console.log(data1)
                 res.status(200).json({
                     "response_code": 200,
                     "data": data1.slice((parseInt(per_page)*(parseInt(page)-1)),parseInt(per_page)*parseInt(page)>data1.length?data1.length:parseInt(per_page)*parseInt(page)),
-                    "field_filter_name": data.user,
+                    "field_filter_name": data1,
                     "count_data": data1.length,
                 });  
                 
