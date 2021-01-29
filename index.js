@@ -162,23 +162,8 @@ app.post('/credential_service/get_user', (req, res) => {
                 delete uu["Block Reason"];
               }
               if(ficos!=''){
-                const clone = (obj) => Object.assign({}, obj);
-                const renameKey = (object, key, newKey) => {
-
-                  const clonedObj = clone(object);
-                
-                  const targetKey = clonedObj[key];
-                
-                
-                
-                  delete clonedObj[key];
-                
-                  clonedObj[newKey] = targetKey;
-                
-                  return clonedObj;
-                
-                };
-                ficos = renameKey(ficos.and[0], 'in', 'some');
+              
+            
                 data1 = data1.filter(hasil=>{if(jsonLogic.apply(ficos, hasil))return hasil}  )
              
                 var kepala={"Role":[1,2]};
